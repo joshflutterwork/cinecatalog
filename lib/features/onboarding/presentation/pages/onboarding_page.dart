@@ -5,7 +5,6 @@ import 'package:cinecatalog/core/widgets/app_icon.dart';
 import 'package:cinecatalog/core/widgets/glass.dart';
 import 'package:cinecatalog/core/widgets/glow_background.dart';
 import 'package:cinecatalog/core/widgets/gradient_button.dart';
-import 'package:cinecatalog/core/widgets/poster_image.dart';
 import 'package:cinecatalog/core/widgets/pressable.dart';
 import 'package:cinecatalog/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:cinecatalog/router/routes.dart';
@@ -176,7 +175,13 @@ class _Fan extends StatelessWidget {
     _FanPose(58, -4, 9, 0.86),
     _FanPose(-58, -4, -9, 0.86),
   ];
-  static const _gradientSeeds = [2, 4, 0];
+
+  /// Bundled posters, so onboarding looks right before any network call.
+  static const _posters = [
+    'assets/images/godfather_movie.png',
+    'assets/images/fightclub.png',
+    'assets/images/kagemusha1990.png',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +218,12 @@ class _Fan extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      PosterPlaceholder(seed: _gradientSeeds[c.k]),
+                      Image.asset(
+                        _posters[c.k],
+                        fit: BoxFit.cover,
+                        // Decode at card size, not the full poster.
+                        cacheWidth: 472,
+                      ),
                       const DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: RadialGradient(

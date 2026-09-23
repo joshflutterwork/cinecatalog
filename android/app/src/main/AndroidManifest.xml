@@ -6,15 +6,14 @@
          YouTube), so plain http is refused, also on Android < 9 where it
          would otherwise be allowed.
          allowBackup: the only app data is the watchlist; it is not backed up
-         to the cloud or copied to a new device. -->
+         to the cloud. -->
     <application
         android:label="cinecatalog"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="false"
         android:allowBackup="false"
-        android:fullBackupContent="false"
-        android:dataExtractionRules="@xml/data_extraction_rules">
+        android:fullBackupContent="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"

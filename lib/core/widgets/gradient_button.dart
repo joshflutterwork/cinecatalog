@@ -46,7 +46,16 @@ class GradientButton extends StatelessWidget {
           AppIcon(leading!, color: color, size: 15),
           const SizedBox(width: 9),
         ],
-        Text(label, style: textStyle),
+        // Shrinks with an ellipsis instead of overflowing the button when
+        // the user's text size is large.
+        Flexible(
+          child: Text(
+            label,
+            style: textStyle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
         if (trailing != null) ...[
           const SizedBox(width: 10),
           AppIcon(trailing!, color: color, size: 16),

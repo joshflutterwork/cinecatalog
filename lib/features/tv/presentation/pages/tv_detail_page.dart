@@ -110,56 +110,72 @@ class _SeasonRail extends StatelessWidget {
   final List<Season> seasons;
   final int seed;
 
+  static const _width = 112.0;
+  static const _posterHeight = 162.0;
+  static const TextStyle _nameStyle = AppText.posterTitle;
+  static final TextStyle _metaStyle = AppText.meta.copyWith(fontSize: 10.5);
+
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 188,
-    child: ListView.separated(
-      scrollDirection: Axis.horizontal,
-      clipBehavior: Clip.none,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
-      itemCount: seasons.length,
-      separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.railGap),
-      itemBuilder: (context, i) {
-        final season = seasons[i];
-        return SizedBox(
-          width: 96,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              OuterShadow(
-                radius: 16,
-                shadow: AppShadows.posterSmall,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: SizedBox(
-                    width: 96,
-                    height: 138,
-                    child: PosterImage(
-                      path: season.posterPath,
-                      seed: seed + season.seasonNumber,
-                      size: TmdbImageSize.w185,
-                      label: '${season.seasonNumber}',
+  Widget build(BuildContext context) {
+    // Poster + gap + one line each for name and meta, grown with the user's
+    // text size so the rail never overflows.
+    final scaler = MediaQuery.textScalerOf(context);
+    double line(TextStyle style) =>
+        scaler.scale(style.fontSize!) * (style.height ?? 1.4);
+    final height = _posterHeight + 8 + line(_nameStyle) + line(_metaStyle) + 4;
+
+    return SizedBox(
+      height: height,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+        itemCount: seasons.length,
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.railGap),
+        itemBuilder: (context, i) {
+          final season = seasons[i];
+          return SizedBox(
+            width: _width,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                OuterShadow(
+                  radius: 16,
+                  shadow: AppShadows.posterSmall,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: SizedBox(
+                      width: _width,
+                      height: _posterHeight,
+                      child: PosterImage(
+                        path: season.posterPath,
+                        seed: seed + season.seasonNumber,
+                        size: TmdbImageSize.w185,
+                        label: '${season.seasonNumber}',
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                season.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.posterTitle.copyWith(color: AppColors.ink),
-              ),
-              Text(
-                '${season.episodeCount} '
-                '${season.episodeCount == 1 ? 'episode' : 'episodes'} · '
-                '${formatYear(season.airDate?.year)}',
-                style: AppText.meta.copyWith(fontSize: 10.5),
-              ),
-            ],
-          ),
-        );
-      },
-    ),
-  );
+                const SizedBox(height: 8),
+                Text(
+                  season.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: _nameStyle.copyWith(color: AppColors.ink),
+                ),
+                Text(
+                  '${season.episodeCount} '
+                  '${season.episodeCount == 1 ? 'episode' : 'episodes'} · '
+                  '${formatYear(season.airDate?.year)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: _metaStyle,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

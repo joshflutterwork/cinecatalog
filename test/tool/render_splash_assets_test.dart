@@ -111,60 +111,56 @@ Widget _iconForeground(double visible) => Center(
 );
 
 void main() {
-  testWidgets(
-    'render branding images',
-    (tester) async {
-      // iOS / legacy app icon: one opaque square; the OS rounds it.
-      await _render(
-        tester,
-        canvas: 1024,
-        scale: 1,
-        file: 'app_icon.png',
-        child: Stack(
-          children: [
-            Positioned.fill(child: _iconBackground(1024)),
-            Positioned.fill(child: _iconForeground(1024)),
-          ],
-        ),
-      );
-      // Android adaptive icon: 108dp layers of which the launcher shows the
-      // middle 72dp (2/3), masked to its own shape.
-      const adaptiveVisible = 1024 * 2 / 3;
-      await _render(
-        tester,
-        canvas: 1024,
-        scale: 1,
-        file: 'app_icon_background.png',
-        child: _iconBackground(adaptiveVisible),
-      );
-      await _render(
-        tester,
-        canvas: 1024,
-        scale: 1,
-        file: 'app_icon_foreground.png',
-        child: _iconForeground(adaptiveVisible),
-      );
-      // Launch screen (4x, as flutter_native_splash expects). No shadow on
-      // any platform: Android 12+ would cut it at its circle, and the
-      // Flutter splash fades the shadow in anyway, so every platform starts
-      // from the same plain tile.
-      // iOS and Android < 12.
-      await _render(
-        tester,
-        canvas: 288,
-        scale: 4,
-        file: 'splash_logo.png',
-        child: _splashLogo(shadow: 0),
-      );
-      // Android 12+: 288dp canvas whose centre circle the system keeps.
-      await _render(
-        tester,
-        canvas: 288,
-        scale: 4,
-        file: 'splash_logo_android12.png',
-        child: _splashLogo(shadow: 0),
-      );
-    },
-    skip: !Platform.environment.containsKey('RENDER_ASSETS'),
-  );
+  testWidgets('render branding images', (tester) async {
+    // iOS / legacy app icon: one opaque square; the OS rounds it.
+    await _render(
+      tester,
+      canvas: 1024,
+      scale: 1,
+      file: 'app_icon.png',
+      child: Stack(
+        children: [
+          Positioned.fill(child: _iconBackground(1024)),
+          Positioned.fill(child: _iconForeground(1024)),
+        ],
+      ),
+    );
+    // Android adaptive icon: 108dp layers of which the launcher shows the
+    // middle 72dp (2/3), masked to its own shape.
+    const adaptiveVisible = 1024 * 2 / 3;
+    await _render(
+      tester,
+      canvas: 1024,
+      scale: 1,
+      file: 'app_icon_background.png',
+      child: _iconBackground(adaptiveVisible),
+    );
+    await _render(
+      tester,
+      canvas: 1024,
+      scale: 1,
+      file: 'app_icon_foreground.png',
+      child: _iconForeground(adaptiveVisible),
+    );
+    // Launch screen (4x, as flutter_native_splash expects). No shadow on
+    // any platform: Android 12+ would cut it at its circle, and the
+    // Flutter splash fades the shadow in anyway, so every platform starts
+    // from the same plain tile.
+    // iOS and Android < 12.
+    await _render(
+      tester,
+      canvas: 288,
+      scale: 4,
+      file: 'splash_logo.png',
+      child: _splashLogo(shadow: 0),
+    );
+    // Android 12+: 288dp canvas whose centre circle the system keeps.
+    await _render(
+      tester,
+      canvas: 288,
+      scale: 4,
+      file: 'splash_logo_android12.png',
+      child: _splashLogo(shadow: 0),
+    );
+  }, skip: !Platform.environment.containsKey('RENDER_ASSETS'));
 }

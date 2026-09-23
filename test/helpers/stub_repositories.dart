@@ -23,9 +23,10 @@ import 'fixtures.dart';
 /// Every list answers two pages of [moviePage]-style fixtures.
 List<Override> stubRepositories({
   MovieRepository movies = const StubMovieRepository(),
+  TvRepository tv = const StubTvRepository(),
 }) => [
   movieRepositoryProvider.overrideWithValue(movies),
-  tvRepositoryProvider.overrideWithValue(const StubTvRepository()),
+  tvRepositoryProvider.overrideWithValue(tv),
   peopleRepositoryProvider.overrideWithValue(const StubPeopleRepository()),
   searchRepositoryProvider.overrideWithValue(const StubSearchRepository()),
 ];
@@ -44,7 +45,7 @@ class StubMovieRepository implements MovieRepository {
       const Left(NotFoundFailure());
 }
 
-final class StubTvRepository implements TvRepository {
+class StubTvRepository implements TvRepository {
   const StubTvRepository();
 
   @override

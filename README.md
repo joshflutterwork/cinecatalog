@@ -6,6 +6,15 @@ A movie, TV show and people catalog for iOS and Android, powered by the
 Built with **Flutter 3.47.5 (stable)** and **Dart 3.13.4**, using Riverpod,
 Dio and clean architecture.
 
+## Demo
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/demo/output.gif" alt="Splash, movies, detail, watchlist, TV and people" width="280"></td>
+    <td align="center"><img src="assets/demo/output2.gif" alt="TV shows, search and a person's biography" width="280"></td>
+  </tr>
+</table>
+
 ## Features
 
 - Movies and TV shows: a swipeable card deck, rails, and 8 "View all" lists

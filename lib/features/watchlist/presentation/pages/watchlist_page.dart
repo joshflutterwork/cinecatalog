@@ -7,6 +7,7 @@ import 'package:cinecatalog/core/widgets/shimmer_box.dart';
 import 'package:cinecatalog/core/widgets/state_views.dart';
 import 'package:cinecatalog/core/widgets/swipe_to_reveal.dart';
 import 'package:cinecatalog/core/widgets/toast.dart';
+import 'package:cinecatalog/features/home/presentation/widgets/nav_fab.dart';
 import 'package:cinecatalog/features/watchlist/presentation/providers/watchlist_providers.dart';
 import 'package:cinecatalog/features/watchlist/presentation/state/watchlist_state.dart';
 import 'package:cinecatalog/router/routes.dart';
@@ -15,7 +16,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// Saved movies and shows, opened from the FAB. Tap a row for its detail;
-/// swipe it left to reveal Remove, which deletes it only when tapped.
+/// swipe it left to reveal Remove, which deletes it only when tapped. The
+/// FAB stays here too ([NavFab]), with Watchlist marked active.
 class WatchlistPage extends ConsumerStatefulWidget {
   const WatchlistPage({super.key});
 
@@ -64,7 +66,9 @@ class _WatchlistPageState extends ConsumerState<WatchlistPage> {
                     child: ErrorCard(error: failure, onRetry: notifier.retry),
                   ),
                   WatchlistLoaded(:final items) => ListView.separated(
-                    padding: EdgeInsets.fromLTRB(20, 6, 20, 34 + bottom),
+                    // Room for the FAB (bottom 104, 52 tall) under the
+                    // last row.
+                    padding: EdgeInsets.fromLTRB(20, 6, 20, 170 + bottom),
                     itemCount: items.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, i) {
@@ -94,6 +98,8 @@ class _WatchlistPageState extends ConsumerState<WatchlistPage> {
               ),
             ],
           ),
+          // Last, so the FAB sits above everything, as on home.
+          const Positioned.fill(child: NavFab(current: NavFabPage.watchlist)),
         ],
       ),
     );

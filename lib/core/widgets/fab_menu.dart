@@ -294,3 +294,25 @@ class _FabButton extends StatelessWidget {
     ),
   );
 }
+
+/// Soft wash behind the open FAB menu; a tap closes the menu. Sits under
+/// the FAB, above the page.
+class FabScrim extends StatelessWidget {
+  const FabScrim({required this.onTap, super.key});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: AppMotion.scrim,
+      curve: AppMotion.fade,
+      builder: (context, t, child) => Opacity(opacity: t, child: child),
+      child: const DecoratedBox(
+        decoration: BoxDecoration(gradient: AppColors.fabScrim),
+      ),
+    ),
+  );
+}

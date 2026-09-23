@@ -55,6 +55,34 @@ void main() {
     expect(find.text('Nothing saved yet'), findsOneWidget);
   });
 
+  testWidgets('the FAB is there too and opens the same menu', (tester) async {
+    await pump(tester, const WatchlistPage());
+
+    await tester.tap(find.bySemanticsLabel('Open menu'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    for (final item in ['Movies', 'TV Shows', 'Popular People']) {
+      expect(find.text(item), findsOneWidget, reason: item);
+      // Present is not enough: the spin-in must have played.
+      final opacity = tester
+          .widget<Opacity>(
+            find
+                .ancestor(of: find.text(item), matching: find.byType(Opacity))
+                .first,
+          )
+          .opacity;
+      expect(opacity, 1, reason: '$item is visible');
+    }
+    // The header title plus the (active) menu pill.
+    expect(find.text('Watchlist'), findsNWidgets(2));
+
+    // The scrim closes it again.
+    await tester.tapAt(const Offset(40, 400));
+    await tester.pump();
+    expect(find.bySemanticsLabel('Open menu'), findsOneWidget);
+  });
+
   testWidgets('the heart adds with a toast, and removes with one', (
     tester,
   ) async {

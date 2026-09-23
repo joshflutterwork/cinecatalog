@@ -1,0 +1,17 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - localdocs/**
+    - build/**
+    - android/**
+    - ios/**
+
+linter:
+  rules:
+    public_member_api_docs: false
+    # go_router's push/go return Futures that UI callbacks never await.
+    discarded_futures: false
+    # Dart 3.13 `new()` constructor shorthand: keep class-name constructors,
+    # which the rest of the Flutter ecosystem still uses.
+    unnecessary_type_name_in_constructor: false

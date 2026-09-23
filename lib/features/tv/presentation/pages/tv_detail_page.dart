@@ -1,10 +1,10 @@
 import 'package:cinecatalog/core/config/tmdb_image.dart';
 import 'package:cinecatalog/core/theme/app_tokens.dart';
 import 'package:cinecatalog/core/utils/formatters.dart';
-import 'package:cinecatalog/core/utils/open_trailer.dart';
 import 'package:cinecatalog/core/widgets/detail_layout.dart';
 import 'package:cinecatalog/core/widgets/glass.dart';
 import 'package:cinecatalog/core/widgets/poster_image.dart';
+import 'package:cinecatalog/core/widgets/trailer_player.dart';
 import 'package:cinecatalog/features/tv/domain/entities/tv_detail.dart';
 import 'package:cinecatalog/features/tv/presentation/providers/tv_providers.dart';
 import 'package:cinecatalog/features/tv/presentation/state/tv_detail_state.dart';
@@ -57,7 +57,7 @@ class _TvDetailView extends ConsumerWidget {
       overview: show.overview,
       onBack: () => context.popOrHome(),
       cta: DetailCtaRow(
-        onPlay: trailer == null ? null : () => openTrailer(context, trailer),
+        onPlay: trailer == null ? null : () => showTrailer(context, trailer),
         playLabel: trailer == null ? 'No trailer yet' : 'Play',
         favourite: ref.watch(watchlistProvider).contains(show),
         onFavourite: () => toggleWatchlist(context, ref, show),

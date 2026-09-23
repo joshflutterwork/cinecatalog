@@ -10,7 +10,8 @@ Dio and clean architecture.
 
 - Movies and TV shows: a swipeable card deck, rails, and 8 "View all" lists
   with infinite scroll
-- Detail pages for movies, shows and people, with trailers that open on YouTube
+- Detail pages for movies, shows and people, with trailers that play inside
+  the app
 - Search across movies, shows and people, plus a people-only search
 - A watchlist saved on the device: tap the heart on a detail page or swipe a
   list row left to add a title
@@ -24,8 +25,8 @@ Dio and clean architecture.
 | **Onboarding** | First launch only | Three intro slides with Skip / Next / Get started |
 | **Home: Movies / TV Shows** | Bottom nav | Search button, a swipeable card deck (top rated movies / popular shows) and three rails (upcoming, now playing, popular / top rated, on the air, airing today) |
 | **View all** | "View all" on the deck or a rail | The full list with infinite scroll; swipe a row left to add it to the watchlist |
-| **Movie detail** | Tap a movie | Poster, genres, overview, rating, runtime, status, tagline, cast, similar movies, Play trailer, watchlist heart |
-| **TV detail** | Tap a show | Poster, genres, overview, rating, episodes, status, network, seasons, cast, similar shows, Play trailer, watchlist heart |
+| **Movie detail** | Tap a movie | Poster, genres, overview, rating, runtime, status, tagline, cast, similar movies, Play (trailer plays in the app), watchlist heart |
+| **TV detail** | Tap a show | Poster, genres, overview, rating, episodes, status, network, seasons, cast, similar shows, Play (trailer plays in the app), watchlist heart |
 | **Person detail** | Tap a person or cast member | Photo, department, birthday, place of birth, biography, known for |
 | **Search** | Search button on home | Search across movies, shows and people with filters; today's trending titles as suggestions |
 | **Popular People** | FAB menu | Grid of popular people with its own people-only search |
@@ -106,8 +107,8 @@ page.
 All data comes from **[The Movie Database (TMDB) API v3](https://developer.themoviedb.org/reference)**
 (`https://api.themoviedb.org/3`), authenticated with a Bearer "API Read
 Access Token". Images come from TMDB's image CDN (`https://image.tmdb.org/t/p/`).
-Trailers are YouTube videos listed by TMDB and open in the YouTube app or
-browser.
+Trailers are YouTube videos listed by TMDB. They play inside the app; the few
+whose owners block embedding offer "Watch on YouTube" instead.
 
 | Screen | Endpoints |
 | --- | --- |
@@ -154,6 +155,7 @@ which goes through a repository to TMDB (or, for the watchlist, the device).
 | Routing | `go_router` |
 | Config and secrets | `envied` (reads `.env`) |
 | Images | `cached_network_image` |
+| Trailers | `youtube_player_iframe`, `url_launcher` (YouTube fallback) |
 | Local storage | `shared_preferences` |
 | Tests | `flutter_test`, `mocktail` |
 

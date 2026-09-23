@@ -1,7 +1,7 @@
 import 'package:cinecatalog/core/theme/app_tokens.dart';
 import 'package:cinecatalog/core/utils/formatters.dart';
-import 'package:cinecatalog/core/utils/open_trailer.dart';
 import 'package:cinecatalog/core/widgets/detail_layout.dart';
+import 'package:cinecatalog/core/widgets/trailer_player.dart';
 import 'package:cinecatalog/features/movie/domain/entities/movie_detail.dart';
 import 'package:cinecatalog/features/movie/presentation/providers/movie_providers.dart';
 import 'package:cinecatalog/features/movie/presentation/state/movie_detail_state.dart';
@@ -52,7 +52,7 @@ class _MovieDetailView extends ConsumerWidget {
       overview: movie.overview,
       onBack: () => context.popOrHome(),
       cta: DetailCtaRow(
-        onPlay: trailer == null ? null : () => openTrailer(context, trailer),
+        onPlay: trailer == null ? null : () => showTrailer(context, trailer),
         playLabel: trailer == null ? 'No trailer yet' : 'Play',
         favourite: ref.watch(watchlistProvider).contains(movie),
         onFavourite: () => toggleWatchlist(context, ref, movie),

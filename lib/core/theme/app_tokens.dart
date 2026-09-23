@@ -44,6 +44,11 @@ abstract final class AppColors {
   );
 
   static const ink = Color(0xFF122036);
+
+  /// Behind the trailer dialog: the app background ([bg]), see-through so
+  /// the detail page stays visible (lightly blurred) underneath.
+  static const trailerScrim = Color.fromRGBO(246, 249, 254, 0.6);
+
   static const inkSoft = Color.fromRGBO(30, 52, 92, 0.75);
   static const inkBody = Color.fromRGBO(30, 52, 92, 0.68);
   static const inkFaint = Color.fromRGBO(30, 52, 92, 0.62);

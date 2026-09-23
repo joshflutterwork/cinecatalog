@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- TMDB API, poster images and trailers. Debug/profile had it; release
+         builds need it here too. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="cinecatalog"
         android:name="${applicationName}"

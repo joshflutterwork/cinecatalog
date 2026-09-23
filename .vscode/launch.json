@@ -20,6 +20,14 @@
       "type": "dart",
       "flutterMode": "profile",
       "program": "lib/main.dart"
+    },
+    {
+      "name": "CineCatalog (release)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main.dart",
+      "toolArgs": ["--dart-define=APP_ENV=prod"]
     }
   ]
 }

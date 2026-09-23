@@ -34,7 +34,8 @@ final class ApiConfig {
   final Duration connectTimeout;
   final Duration receiveTimeout;
 
-  /// Chucker only in dev. Staging and prod skip it even when debug-built,
-  /// so testers do not see internal traffic.
+  /// Chucker only in dev (and only in debug builds, see `ApiClient`).
+  /// Staging and prod skip it even when debug-built, so testers do not see
+  /// internal traffic.
   bool get enableHttpInspector => environment == AppEnvironment.dev;
 }

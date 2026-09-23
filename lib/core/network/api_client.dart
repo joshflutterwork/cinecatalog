@@ -35,7 +35,8 @@ enum SessionEndReason {
 /// * every failed call mapped to a [NetworkException] and shown as a toast
 ///   on [navigatorKey]'s overlay, the same error type at most once per
 ///   [errorToastWindow];
-/// * the Chucker HTTP inspector when [ApiConfig.enableHttpInspector].
+/// * the Chucker HTTP inspector in debug builds when
+///   [ApiConfig.enableHttpInspector].
 final class ApiClient {
   ApiClient(
     ApiConfig config,
@@ -58,9 +59,11 @@ final class ApiClient {
           responseHeader: false,
           logPrint: (line) => debugPrint('$line'),
         ),
-      // Restrict the inspector to dev. UAT / staging / prod skip it even
-      // when debug-built so testers don't see internal traffic.
-      if (config.enableHttpInspector) ChuckerDioInterceptor(),
+      // Restrict the inspector to dev debug builds. UAT / staging / prod
+      // skip it even when debug-built so testers don't see internal
+      // traffic, and release/profile builds never add it, even with
+      // APP_ENV=dev.
+      if (kDebugMode && config.enableHttpInspector) ChuckerDioInterceptor(),
       RetryInterceptor(_dio, backoff: retryBackoff),
       // Last, so it sees the final outcome of every request.
       _buildStatusInterceptor(),

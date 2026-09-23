@@ -106,7 +106,7 @@ All settings live in `.env`.
 | `TMDB_TOKEN` | – | TMDB access token (required). Obfuscated in the build. |
 | `TMDB_LANGUAGE` | `en-US` | Language of titles and overviews |
 | `TMDB_REGION` | – | Country for movie release dates, e.g. `ID` |
-| `APP_ENV` | `dev` | `dev`, `staging` or `prod`. Only `dev` turns on the Chucker HTTP inspector. |
+| `APP_ENV` | `dev` | `dev`, `staging` or `prod`. Only `dev` debug builds turn on the Chucker HTTP inspector; release builds never include it. |
 
 For QA, `--dart-define=INITIAL_ROUTE=/movie/27205` opens the app straight on a
 page.

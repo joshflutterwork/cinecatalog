@@ -1,5 +1,6 @@
 import 'package:cinecatalog/core/theme/app_tokens.dart';
 import 'package:cinecatalog/core/widgets/app_icon.dart';
+import 'package:cinecatalog/core/widgets/app_refresh.dart';
 import 'package:cinecatalog/core/widgets/glow_background.dart';
 import 'package:cinecatalog/core/widgets/headers.dart';
 import 'package:cinecatalog/core/widgets/media_list_row.dart';
@@ -84,46 +85,52 @@ class _CategoryListPageState extends ConsumerState<CategoryListPage> {
                       onRetry: () => category.notifier(ref).retry(),
                     ),
                   ),
-                  MediaListLoaded(data: final value) => LoadMoreListener(
-                    onLoadMore: () => category.notifier(ref).loadNextPage(),
-                    child: ListView.separated(
-                      padding: EdgeInsets.fromLTRB(20, 6, 20, 34 + bottom),
-                      itemCount: value.items.length + 1,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, i) {
-                        if (i == value.items.length) {
-                          return ListFooter(
-                            isLoading: value.isLoadingMore,
-                            hasMore: value.hasMore,
-                            failure: value.loadMoreFailure,
-                            onLoadMore: () =>
-                                category.notifier(ref).loadNextPage(),
-                          );
-                        }
-                        final media = value.items[i];
-                        final saved = watchlist.contains(media);
-                        return RiseIn(
-                          enabled: _seen.add(i),
-                          // Swipe left to add to (or remove from) the
-                          // watchlist, like the heart on the detail page.
-                          child: SwipeToReveal(
-                            id: '${media.mediaType.name}-${media.id}',
-                            openRow: _openRow,
-                            actionLabel: saved ? 'Remove' : 'Add',
-                            // Same × as Remove on the Watchlist page.
-                            actionIcon: saved ? AppIcons.close : AppIcons.heart,
-                            actionColor: saved
-                                ? AppColors.errorInk
-                                : AppColors.accent,
-                            onAction: () =>
-                                toggleWatchlist(context, ref, media),
-                            child: MediaListRow(
-                              media: media,
-                              onTap: () => context.push(Routes.media(media)),
+                  MediaListLoaded(data: final value) => AppRefresh(
+                    onRefresh: category.notifier(ref).refresh,
+                    child: LoadMoreListener(
+                      onLoadMore: () => category.notifier(ref).loadNextPage(),
+                      child: ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.fromLTRB(20, 6, 20, 34 + bottom),
+                        itemCount: value.items.length + 1,
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
+                        itemBuilder: (context, i) {
+                          if (i == value.items.length) {
+                            return ListFooter(
+                              isLoading: value.isLoadingMore,
+                              hasMore: value.hasMore,
+                              failure: value.loadMoreFailure,
+                              onLoadMore: () =>
+                                  category.notifier(ref).loadNextPage(),
+                            );
+                          }
+                          final media = value.items[i];
+                          final saved = watchlist.contains(media);
+                          return RiseIn(
+                            enabled: _seen.add(i),
+                            // Swipe left to add to (or remove from) the
+                            // watchlist, like the heart on the detail page.
+                            child: SwipeToReveal(
+                              id: '${media.mediaType.name}-${media.id}',
+                              openRow: _openRow,
+                              actionLabel: saved ? 'Remove' : 'Add',
+                              // Same × as Remove on the Watchlist page.
+                              actionIcon: saved
+                                  ? AppIcons.close
+                                  : AppIcons.heart,
+                              actionColor: saved
+                                  ? AppColors.errorInk
+                                  : AppColors.accent,
+                              onAction: () =>
+                                  toggleWatchlist(context, ref, media),
+                              child: MediaListRow(
+                                media: media,
+                                onTap: () => context.push(Routes.media(media)),
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 },

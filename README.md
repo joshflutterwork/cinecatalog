@@ -25,6 +25,8 @@ Dio and clean architecture.
 - A watchlist saved on the device: tap the heart on a detail page or swipe a
   list row left to add a title
 - Skeleton loading, empty and error states with retry on every screen
+- Pull to refresh on home, the lists, search, Popular People and the detail
+  pages; what is on screen stays until the fresh data arrives
 
 ## Screens
 
@@ -36,7 +38,7 @@ Dio and clean architecture.
 | **View all** | "View all" on the deck or a rail | The full list with infinite scroll; swipe a row left to add it to the watchlist |
 | **Movie detail** | Tap a movie | Poster, genres, overview, rating, runtime, status, tagline, cast, similar movies, Play (trailer plays in the app), watchlist heart |
 | **TV detail** | Tap a show | Poster, genres, overview, rating, episodes, status, network, seasons, cast, similar shows, Play (trailer plays in the app), watchlist heart |
-| **Person detail** | Tap a person or cast member | Photo, department, birthday, place of birth, biography, known for |
+| **Person detail** | Tap a person or cast member | Photo, department, birthday, place of birth, biography (Show more / Show less), best-known roles |
 | **Search** | Search button on home | Search across movies, shows and people with filters; today's trending titles as suggestions |
 | **Popular People** | FAB menu | Grid of popular people with its own people-only search |
 | **Watchlist** | FAB menu | Saved movies and shows; swipe a row left to remove it; empty state when nothing is saved |

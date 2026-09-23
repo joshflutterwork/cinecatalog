@@ -181,6 +181,64 @@ void main() {
       expect(read(), isA<MovieListLoaded>(), reason: 'stale error ignored');
     });
 
+    test('refresh swaps in a fresh page 1 without a loading state', () async {
+      var round = 0;
+      create(
+        (page) async =>
+            Right(round == 0 ? moviePage(page) : moviePage(page + 10)),
+      );
+      await settle();
+      await notifier().loadNextPage();
+      expect((read() as MovieListLoaded).movies, hasLength(6));
+
+      round = 1;
+      final refreshing = notifier().refresh();
+      expect(read(), isA<MovieListLoaded>(), reason: 'items stay on screen');
+      await refreshing;
+
+      final state = read() as MovieListLoaded;
+      expect(state.movies.map((m) => m.id), [30, 31, 32]);
+      expect(state.data.page, 11);
+    });
+
+    test('a failed refresh keeps the movies and frees the footer', () async {
+      final nextPage = Completer<Either<Failure, PaginatedEntity<Movie>>>();
+      var fail = false;
+      create((page) {
+        if (fail) return Future.value(const Left(NetworkFailure()));
+        return page == 1 ? Future.value(Right(moviePage(1))) : nextPage.future;
+      });
+      await settle();
+      unawaited(notifier().loadNextPage());
+      expect((read() as MovieListLoaded).data.isLoadingMore, isTrue);
+
+      fail = true;
+      await notifier().refresh();
+      nextPage.complete(Right(moviePage(2)));
+      await settle();
+
+      final state = read() as MovieListLoaded;
+      expect(state.movies, hasLength(3), reason: 'stale next page dropped');
+      expect(state.data.loadMore, isA<LoadMoreIdle>());
+    });
+
+    test('a failed refresh with nothing loaded shows the error', () async {
+      var fail = true;
+      create(
+        (page) async =>
+            fail ? const Left(ServerFailure()) : Right(moviePage(page)),
+      );
+      await settle();
+      expect(read(), isA<MovieListError>());
+
+      await notifier().refresh();
+      expect(read(), isA<MovieListError>());
+
+      fail = false;
+      await notifier().refresh();
+      expect(read(), isA<MovieListLoaded>());
+    });
+
     test('never goes past TMDB page 500', () {
       const data = PageData<Movie>(items: [], page: 500, totalPages: 38000);
       expect(data.hasMore, isFalse);
@@ -203,6 +261,19 @@ void main() {
 
       await settle();
       expect((read() as MovieDetailLoaded).detail.movie.id, 1);
+    });
+
+    test('a failed refresh keeps the loaded detail', () async {
+      var fail = false;
+      create(
+        () async => fail ? const Left(NetworkFailure()) : Right(_detail()),
+      );
+      await settle();
+
+      fail = true;
+      await container.read(provider.notifier).refresh();
+
+      expect(read(), isA<MovieDetailLoaded>());
     });
 
     test('MovieDetailError, then retry recovers', () async {

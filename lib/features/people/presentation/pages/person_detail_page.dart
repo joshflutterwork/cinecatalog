@@ -26,15 +26,19 @@ class PersonDetailPage extends ConsumerWidget {
         onRetry: () => ref.read(personDetailProvider(id).notifier).retry(),
         onBack: back,
       ),
-      PersonDetailLoaded(:final detail) => _PersonDetailView(detail: detail),
+      PersonDetailLoaded(:final detail) => _PersonDetailView(
+        detail: detail,
+        onRefresh: ref.read(personDetailProvider(id).notifier).refresh,
+      ),
     };
   }
 }
 
 class _PersonDetailView extends StatelessWidget {
-  const _PersonDetailView({required this.detail});
+  const _PersonDetailView({required this.detail, required this.onRefresh});
 
   final PersonDetail detail;
+  final Future<void> Function() onRefresh;
 
   static const _months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', //
@@ -53,6 +57,7 @@ class _PersonDetailView extends StatelessWidget {
         ? 'No biography for ${person.name} yet.'
         : detail.biography;
     return DetailLayout(
+      onRefresh: onRefresh,
       imagePath: person.profilePath,
       seed: person.id + 2,
       imageLabel: initialsOf(person.name),

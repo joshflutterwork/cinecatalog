@@ -69,6 +69,9 @@ abstract interface class PagingActions {
   Future<void> loadNextPage();
 
   void retry();
+
+  /// Pull to refresh: reloads page 1 while the current items stay visible.
+  Future<void> refresh();
 }
 
 /// Paging rules shared by every list notifier. The notifier keeps its own
@@ -79,7 +82,11 @@ abstract interface class PagingActions {
 /// * a later page failing keeps the items and sets [LoadMoreFailed];
 /// * [loadNextPage] is ignored while a request is in flight or after the
 ///   last page (`min(total_pages, 500)`);
-/// * a response that arrives after [retry] started over is dropped.
+/// * a response that arrives after [retry] or [refresh] started over is
+///   dropped;
+/// * [refresh] keeps the items on screen while page 1 reloads; if it
+///   fails they stay (the ApiClient toast says why), unless there were no
+///   items yet, in which case the error state shows.
 ///
 /// Call [loadFirstPage] from `build` and return the loading state.
 mixin PagingMixin<T, S> on Notifier<S> implements PagingActions {
@@ -133,6 +140,30 @@ mixin PagingMixin<T, S> on Notifier<S> implements PagingActions {
           loadMore: const LoadMoreIdle(),
         ),
       ),
+    );
+  }
+
+  @override
+  Future<void> refresh() async {
+    final generation = ++_generation;
+    final result = await fetchPage(1);
+    if (!ref.mounted || generation != _generation) return;
+    final current = pageDataOf(state);
+    state = result.fold(
+      // Keep what is on screen; a next page that was loading was dropped
+      // with the generation bump, so its footer goes back to idle.
+      (failure) => current == null
+          ? errorState(failure)
+          : loadedState(current.copyWith(loadMore: const LoadMoreIdle())),
+      (page) => page.items.isEmpty
+          ? emptyState
+          : loadedState(
+              PageData(
+                items: page.items,
+                page: page.page,
+                totalPages: page.totalPages,
+              ),
+            ),
     );
   }
 

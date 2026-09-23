@@ -3,6 +3,7 @@ import 'package:cinecatalog/core/state/paging.dart';
 import 'package:cinecatalog/core/theme/app_tokens.dart';
 import 'package:cinecatalog/core/utils/formatters.dart';
 import 'package:cinecatalog/core/widgets/app_icon.dart';
+import 'package:cinecatalog/core/widgets/app_refresh.dart';
 import 'package:cinecatalog/core/widgets/glass.dart';
 import 'package:cinecatalog/core/widgets/glow_background.dart';
 import 'package:cinecatalog/core/widgets/pagination.dart';
@@ -233,6 +234,7 @@ class _SearchBody extends ConsumerWidget {
         child: ErrorCard(error: failure, onRetry: notifier.retry),
       ),
       SearchResultsLoaded(data: final value) => _ResultList(
+        onRefresh: notifier.refresh,
         value: value,
         visible: state.filter.apply(value.items),
         query: state.committedQuery,
@@ -246,6 +248,7 @@ class _SearchBody extends ConsumerWidget {
 
 class _ResultList extends StatelessWidget {
   const _ResultList({
+    required this.onRefresh,
     required this.value,
     required this.visible,
     required this.query,
@@ -254,6 +257,7 @@ class _ResultList extends StatelessWidget {
     required this.onOpen,
   });
 
+  final Future<void> Function() onRefresh;
   final PageData<SearchResult> value;
 
   /// [value]'s items after the filter.
@@ -281,23 +285,27 @@ class _ResultList extends StatelessWidget {
         ],
       );
     }
-    return LoadMoreListener(
-      onLoadMore: onLoadMore,
-      child: ListView.separated(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: EdgeInsets.fromLTRB(20, 0, 20, bottomPadding),
-        itemCount: visible.length + 2,
-        separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 0 : 10),
-        itemBuilder: (context, i) {
-          if (i == 0) {
-            return _Kicker(
-              '${visible.length} result${visible.length == 1 ? '' : 's'}',
-            );
-          }
-          if (i == visible.length + 1) return footer;
-          final result = visible[i - 1];
-          return _ResultRow(result: result, onTap: () => onOpen(result));
-        },
+    return AppRefresh(
+      onRefresh: onRefresh,
+      child: LoadMoreListener(
+        onLoadMore: onLoadMore,
+        child: ListView.separated(
+          physics: const AlwaysScrollableScrollPhysics(),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(20, 0, 20, bottomPadding),
+          itemCount: visible.length + 2,
+          separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 0 : 10),
+          itemBuilder: (context, i) {
+            if (i == 0) {
+              return _Kicker(
+                '${visible.length} result${visible.length == 1 ? '' : 's'}',
+              );
+            }
+            if (i == visible.length + 1) return footer;
+            final result = visible[i - 1];
+            return _ResultRow(result: result, onTap: () => onOpen(result));
+          },
+        ),
       ),
     );
   }

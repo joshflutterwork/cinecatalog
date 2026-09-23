@@ -30,21 +30,26 @@ class TvDetailPage extends ConsumerWidget {
         onRetry: () => ref.read(tvDetailProvider(id).notifier).retry(),
         onBack: back,
       ),
-      TvDetailLoaded(:final detail) => _TvDetailView(detail: detail),
+      TvDetailLoaded(:final detail) => _TvDetailView(
+        detail: detail,
+        onRefresh: ref.read(tvDetailProvider(id).notifier).refresh,
+      ),
     };
   }
 }
 
 class _TvDetailView extends ConsumerWidget {
-  const _TvDetailView({required this.detail});
+  const _TvDetailView({required this.detail, required this.onRefresh});
 
   final TvDetail detail;
+  final Future<void> Function() onRefresh;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final show = detail.show;
     final trailer = detail.trailers.firstOrNull;
     return DetailLayout(
+      onRefresh: onRefresh,
       imagePath: show.posterPath ?? show.backdropPath,
       seed: show.id,
       tags: [

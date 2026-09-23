@@ -17,10 +17,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/fixtures.dart';
 
-/// Answers instantly; fails every call while [failing] is true.
+/// Answers instantly; fails every call while [failing] is true. Raising
+/// [edition] makes TMDB "change": the same pages hold other movies.
 final class _StubMovieRepository implements MovieRepository {
   bool failing = false;
   int calls = 0;
+  int edition = 0;
 
   @override
   Future<Either<Failure, PaginatedEntity<Movie>>> getMovies(
@@ -29,7 +31,15 @@ final class _StubMovieRepository implements MovieRepository {
   ) async {
     calls++;
     if (failing) return const Left(NetworkFailure());
-    return Right(moviePage(page, perPage: 6));
+    final result = moviePage(page + edition * 10, perPage: 6);
+    return Right(
+      PaginatedEntity(
+        items: result.items,
+        page: page,
+        totalPages: result.totalPages,
+        totalResults: result.totalResults,
+      ),
+    );
   }
 
   @override
@@ -132,5 +142,24 @@ void main() {
     await tester.pump();
     expect(find.text('Removed from watchlist'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('pulling down reloads page 1 and shows the new movies', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+    expect(repository.calls, 1);
+    expect(find.text('Movie 0'), findsOneWidget);
+
+    // TMDB's list changed since the page was opened.
+    repository.edition = 1;
+    await tester.fling(find.text('Movie 0'), const Offset(0, 400), 1000);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(repository.calls, 2);
+    expect(find.text('Movie 60'), findsOneWidget, reason: 'new state shown');
+    expect(find.text('Movie 0'), findsNothing, reason: 'old items replaced');
   });
 }

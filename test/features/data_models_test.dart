@@ -160,7 +160,7 @@ void main() {
     expect(person.knownFor[1], isA<TvShow>());
   });
 
-  test('PersonDetailModel sorts credits by popularity and drops repeats', () {
+  test('PersonDetailModel ranks roles by votes and drops repeats', () {
     final detail = PersonDetailModel.fromJson(const {
       'id': 1,
       'name': 'X',
@@ -168,16 +168,101 @@ void main() {
       'birthday': '1996-09-01',
       'combined_credits': {
         'cast': [
-          {'media_type': 'tv', 'id': 3, 'name': 'Low', 'popularity': 1},
-          {'media_type': 'movie', 'id': 2, 'title': 'High', 'popularity': 9},
-          {'media_type': 'tv', 'id': 3, 'name': 'Low', 'popularity': 1},
+          {
+            'media_type': 'tv',
+            'id': 3,
+            'name': 'Small Show',
+            'character': 'Rue',
+            'vote_count': 40,
+            'popularity': 90,
+          },
+          {
+            'media_type': 'movie',
+            'id': 2,
+            'title': 'Big Movie',
+            'character': 'MJ',
+            'vote_count': 9000,
+            'popularity': 5,
+          },
+          {
+            'media_type': 'tv',
+            'id': 3,
+            'name': 'Small Show',
+            'character': 'Rue (voice)',
+            'vote_count': 40,
+          },
         ],
       },
     }).toEntity();
 
-    expect(detail.credits.map((m) => m.title), ['High', 'Low']);
+    expect(detail.credits.map((m) => m.title), ['Big Movie', 'Small Show']);
+    expect(detail.person.knownFor.first.title, 'Big Movie');
     expect(detail.birthday?.year, 1996);
     expect(detail.placeOfBirth, isNull);
+  });
+
+  test('PersonDetailModel leaves out talk-show and self appearances', () {
+    final detail = PersonDetailModel.fromJson(const {
+      'id': 1,
+      'name': 'X',
+      'combined_credits': {
+        'cast': [
+          {
+            'media_type': 'tv',
+            'id': 10,
+            'name': 'The Late Show',
+            'character': 'Self - Guest',
+            'genre_ids': [35, 10767],
+            'vote_count': 999999,
+          },
+          {
+            'media_type': 'tv',
+            'id': 11,
+            'name': 'Award Night',
+            'character': 'Herself',
+            'vote_count': 88888,
+          },
+          {
+            'media_type': 'movie',
+            'id': 12,
+            'title': 'Actual Role',
+            'character': 'Lead',
+            'vote_count': 10,
+          },
+        ],
+      },
+    }).toEntity();
+
+    expect(detail.credits.map((m) => m.title), ['Actual Role']);
+  });
+
+  test('PersonDetailModel falls back to appearances for a host', () {
+    final detail = PersonDetailModel.fromJson(const {
+      'id': 1,
+      'name': 'Host',
+      'combined_credits': {
+        'cast': [
+          {
+            'media_type': 'tv',
+            'id': 20,
+            'name': 'Guest Spot',
+            'character': 'Self - Guest',
+            'genre_ids': [10767],
+            'vote_count': 10,
+          },
+          {
+            'media_type': 'tv',
+            'id': 21,
+            'name': 'My Own Show',
+            'character': 'Self - Host',
+            'genre_ids': [10767],
+            'vote_count': 500,
+          },
+        ],
+      },
+    }).toEntity();
+
+    expect(detail.credits.map((m) => m.title), ['My Own Show', 'Guest Spot']);
   });
 
   test('search rows are split by media_type and unknown types dropped', () {

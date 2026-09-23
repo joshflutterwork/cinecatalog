@@ -79,39 +79,14 @@ class DetailLayout extends StatelessWidget {
                   // Ends just under the text rather than at the screen edge,
                   // so [extras] follow the overview without a gap. The fixed
                   // CTA covers the space the hero gives up.
-                  child: SizedBox(
-                    height: screen.height - textBottom + _textGap,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // The poster stops right above the text; only its last
-                        // 24px fade into the page.
-                        Expanded(
-                          child: _HeroImage(
-                            child: PosterImage(
-                              path: imagePath,
-                              seed: seed,
-                              size: TmdbImageSize.w780,
-                              label: imageLabel,
-                              labelSize: 96,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            22,
-                            _textTop,
-                            22,
-                            _textGap,
-                          ),
-                          child: _HeroText(
-                            tags: tags,
-                            title: title,
-                            overview: overview,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: _Hero(
+                    collapsedHeight: screen.height - textBottom + _textGap,
+                    imagePath: imagePath,
+                    seed: seed,
+                    imageLabel: imageLabel,
+                    tags: tags,
+                    title: title,
+                    overview: overview,
                   ),
                 ),
                 ...extras.map((e) => SliverToBoxAdapter(child: e)),
@@ -201,16 +176,118 @@ class _HeroImage extends StatelessWidget {
   );
 }
 
-class _HeroText extends StatelessWidget {
-  const _HeroText({
+/// Poster, then chips, title and overview. Collapsed, it is exactly one
+/// screen tall minus the CTA row, with the poster filling what the text
+/// leaves. "Show more" keeps the poster at that height and lets the full
+/// overview grow below it, pushing the rest of the page down.
+class _Hero extends StatefulWidget {
+  const _Hero({
+    required this.collapsedHeight,
+    required this.imagePath,
+    required this.seed,
+    required this.imageLabel,
     required this.tags,
     required this.title,
     required this.overview,
   });
 
+  final double collapsedHeight;
+  final String? imagePath;
+  final int seed;
+  final String? imageLabel;
   final List<String> tags;
   final String title;
   final String overview;
+
+  @override
+  State<_Hero> createState() => _HeroState();
+}
+
+class _HeroState extends State<_Hero> {
+  bool _expanded = false;
+
+  /// The poster's height while collapsed, kept when the text expands.
+  double _posterHeight = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final poster = _HeroImage(
+      child: PosterImage(
+        path: widget.imagePath,
+        seed: widget.seed,
+        size: TmdbImageSize.w780,
+        label: widget.imageLabel,
+        labelSize: 96,
+      ),
+    );
+    final text = Padding(
+      padding: const EdgeInsets.fromLTRB(
+        22,
+        DetailLayout._textTop,
+        22,
+        DetailLayout._textGap,
+      ),
+      child: _HeroText(
+        tags: widget.tags,
+        title: widget.title,
+        overview: widget.overview,
+        expanded: _expanded,
+        onToggle: () => setState(() => _expanded = !_expanded),
+      ),
+    );
+
+    return AnimatedSize(
+      duration: AppMotion.navPill,
+      curve: AppMotion.ease,
+      alignment: Alignment.topCenter,
+      child: _expanded
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: _posterHeight, child: poster),
+                text,
+              ],
+            )
+          : SizedBox(
+              height: widget.collapsedHeight,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // The poster stops right above the text; only its last
+                  // 24px fade into the page.
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        _posterHeight = constraints.maxHeight;
+                        return poster;
+                      },
+                    ),
+                  ),
+                  text,
+                ],
+              ),
+            ),
+    );
+  }
+}
+
+class _HeroText extends StatelessWidget {
+  const _HeroText({
+    required this.tags,
+    required this.title,
+    required this.overview,
+    required this.expanded,
+    required this.onToggle,
+  });
+
+  final List<String> tags;
+  final String title;
+  final String overview;
+  final bool expanded;
+  final VoidCallback onToggle;
+
+  /// Three, not the design's four, so the poster above keeps more height.
+  static const _collapsedLines = 3;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -228,13 +305,49 @@ class _HeroText extends StatelessWidget {
       Text(title, style: AppText.detailTitle),
       if (overview.isNotEmpty) ...[
         const SizedBox(height: 12),
-        Text(
-          overview,
-          style: AppText.detailBody,
-          // Three, not the design's four, so the poster above keeps more
-          // height.
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // Only offer "Show more" when the text really is cut off.
+            final painter = TextPainter(
+              text: TextSpan(text: overview, style: AppText.detailBody),
+              maxLines: _collapsedLines,
+              textDirection: Directionality.of(context),
+              textScaler: MediaQuery.textScalerOf(context),
+            )..layout(maxWidth: constraints.maxWidth);
+            final overflows = painter.didExceedMaxLines;
+            painter.dispose();
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  overview,
+                  style: AppText.detailBody,
+                  maxLines: expanded ? null : _collapsedLines,
+                  overflow: expanded ? null : TextOverflow.ellipsis,
+                ),
+                if (overflows || expanded)
+                  Semantics(
+                    button: true,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: onToggle,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 6, bottom: 2),
+                        child: Text(
+                          expanded ? 'Show less' : 'Show more',
+                          style: AppText.pill.copyWith(
+                            fontSize: 13,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ],
     ],

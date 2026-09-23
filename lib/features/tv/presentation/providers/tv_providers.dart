@@ -99,6 +99,18 @@ final class TvDetailNotifier extends Notifier<TvDetailState> {
     _load(_generation);
   }
 
+  /// Pull to refresh: reloads while the current detail stays on screen. A
+  /// failure keeps it (the ApiClient toast says why).
+  Future<void> refresh() async {
+    final generation = ++_generation;
+    final result = await ref.read(getTvDetailProvider)(id);
+    if (!ref.mounted || generation != _generation) return;
+    state = result.fold(
+      (failure) => state is TvDetailLoaded ? state : TvDetailError(failure),
+      TvDetailLoaded.new,
+    );
+  }
+
   Future<void> _load(int generation) async {
     final result = await ref.read(getTvDetailProvider)(id);
     if (!ref.mounted || generation != _generation) return;

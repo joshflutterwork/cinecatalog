@@ -2,6 +2,7 @@ import 'package:cinecatalog/core/config/tmdb_image.dart';
 import 'package:cinecatalog/core/state/paging.dart';
 import 'package:cinecatalog/core/theme/app_tokens.dart';
 import 'package:cinecatalog/core/widgets/app_icon.dart';
+import 'package:cinecatalog/core/widgets/app_refresh.dart';
 import 'package:cinecatalog/core/widgets/glass.dart';
 import 'package:cinecatalog/core/widgets/glow_background.dart';
 import 'package:cinecatalog/core/widgets/headers.dart';
@@ -154,6 +155,7 @@ class _PopularBody extends ConsumerWidget {
       PopularPeopleLoaded(:final data) => _PeopleGrid(
         data: data,
         onLoadMore: notifier.loadNextPage,
+        onRefresh: notifier.refresh,
         endLabel: 'Everyone is shown',
         bottomPadding: bottomPadding,
       ),
@@ -184,6 +186,7 @@ class _SearchBody extends ConsumerWidget {
       PeopleSearchLoaded(:final data) => _PeopleGrid(
         data: data,
         onLoadMore: notifier.loadNextPage,
+        onRefresh: notifier.refresh,
         endLabel: 'All results are shown',
         bottomPadding: bottomPadding,
       ),
@@ -196,46 +199,52 @@ class _PeopleGrid extends StatelessWidget {
   const _PeopleGrid({
     required this.data,
     required this.onLoadMore,
+    required this.onRefresh,
     required this.endLabel,
     required this.bottomPadding,
   });
 
   final PageData<Person> data;
   final VoidCallback onLoadMore;
+  final Future<void> Function() onRefresh;
   final String endLabel;
   final double bottomPadding;
 
   @override
-  Widget build(BuildContext context) => LoadMoreListener(
-    onLoadMore: onLoadMore,
-    child: CustomScrollView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-          sliver: SliverGrid.builder(
-            gridDelegate: _gridDelegate,
-            itemCount: data.items.length,
-            itemBuilder: (context, i) => PersonTile(
-              person: data.items[i],
-              onTap: () =>
-                  context.push(Routes.person.build([data.items[i].id])),
+  Widget build(BuildContext context) => AppRefresh(
+    onRefresh: onRefresh,
+    child: LoadMoreListener(
+      onLoadMore: onLoadMore,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+            sliver: SliverGrid.builder(
+              gridDelegate: _gridDelegate,
+              itemCount: data.items.length,
+              itemBuilder: (context, i) => PersonTile(
+                person: data.items[i],
+                onTap: () =>
+                    context.push(Routes.person.build([data.items[i].id])),
+              ),
             ),
           ),
-        ),
-        SliverPadding(
-          padding: EdgeInsets.only(bottom: bottomPadding),
-          sliver: SliverToBoxAdapter(
-            child: ListFooter(
-              isLoading: data.isLoadingMore,
-              hasMore: data.hasMore,
-              failure: data.loadMoreFailure,
-              onLoadMore: onLoadMore,
-              endLabel: endLabel,
+          SliverPadding(
+            padding: EdgeInsets.only(bottom: bottomPadding),
+            sliver: SliverToBoxAdapter(
+              child: ListFooter(
+                isLoading: data.isLoadingMore,
+                hasMore: data.hasMore,
+                failure: data.loadMoreFailure,
+                onLoadMore: onLoadMore,
+                endLabel: endLabel,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }

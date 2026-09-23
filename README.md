@@ -25,6 +25,8 @@ Dio and clean architecture.
 - A watchlist saved on the device: tap the heart on a detail page or swipe a
   list row left to add a title
 - Skeleton loading, empty and error states with retry on every screen
+- Pull to refresh on home, the lists, search, Popular People and the detail
+  pages; what is on screen stays until the fresh data arrives
 
 ## Screens
 

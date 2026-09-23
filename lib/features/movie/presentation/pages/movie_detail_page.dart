@@ -27,21 +27,26 @@ class MovieDetailPage extends ConsumerWidget {
         onRetry: () => ref.read(movieDetailProvider(id).notifier).retry(),
         onBack: back,
       ),
-      MovieDetailLoaded(:final detail) => _MovieDetailView(detail: detail),
+      MovieDetailLoaded(:final detail) => _MovieDetailView(
+        detail: detail,
+        onRefresh: ref.read(movieDetailProvider(id).notifier).refresh,
+      ),
     };
   }
 }
 
 class _MovieDetailView extends ConsumerWidget {
-  const _MovieDetailView({required this.detail});
+  const _MovieDetailView({required this.detail, required this.onRefresh});
 
   final MovieDetail detail;
+  final Future<void> Function() onRefresh;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final movie = detail.movie;
     final trailer = detail.trailers.firstOrNull;
     return DetailLayout(
+      onRefresh: onRefresh,
       imagePath: movie.posterPath ?? movie.backdropPath,
       seed: movie.id,
       tags: [

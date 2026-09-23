@@ -3,6 +3,7 @@ import 'package:cinecatalog/core/config/tmdb_image.dart';
 import 'package:cinecatalog/core/error/failure.dart';
 import 'package:cinecatalog/core/theme/app_tokens.dart';
 import 'package:cinecatalog/core/widgets/app_icon.dart';
+import 'package:cinecatalog/core/widgets/app_refresh.dart';
 import 'package:cinecatalog/core/widgets/glass.dart';
 import 'package:cinecatalog/core/widgets/gradient_button.dart';
 import 'package:cinecatalog/core/widgets/headers.dart';
@@ -30,6 +31,7 @@ class DetailLayout extends StatelessWidget {
     this.imageLabel,
     this.cta,
     this.extras = const [],
+    this.onRefresh,
   });
 
   final String? imagePath;
@@ -43,6 +45,9 @@ class DetailLayout extends StatelessWidget {
   /// Pinned 30px above the bottom edge. Null leaves more room for text.
   final Widget? cta;
   final List<Widget> extras;
+
+  /// Pull to refresh; null turns it off.
+  final Future<void> Function()? onRefresh;
 
   /// Space under the overview inside the hero. With the tiles' own top
   /// padding of 8 this gives the 22 used between the other detail blocks.
@@ -65,52 +70,58 @@ class DetailLayout extends StatelessWidget {
       backgroundColor: AppColors.detailBottom,
       body: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                // Ends just under the text rather than at the screen edge,
-                // so [extras] follow the overview without a gap. The fixed
-                // CTA covers the space the hero gives up.
-                child: SizedBox(
-                  height: screen.height - textBottom + _textGap,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // The poster stops right above the text; only its last
-                      // 24px fade into the page.
-                      Expanded(
-                        child: _HeroImage(
-                          child: PosterImage(
-                            path: imagePath,
-                            seed: seed,
-                            size: TmdbImageSize.w780,
-                            label: imageLabel,
-                            labelSize: 96,
+          _MaybeRefresh(
+            onRefresh: onRefresh,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  // Ends just under the text rather than at the screen edge,
+                  // so [extras] follow the overview without a gap. The fixed
+                  // CTA covers the space the hero gives up.
+                  child: SizedBox(
+                    height: screen.height - textBottom + _textGap,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // The poster stops right above the text; only its last
+                        // 24px fade into the page.
+                        Expanded(
+                          child: _HeroImage(
+                            child: PosterImage(
+                              path: imagePath,
+                              seed: seed,
+                              size: TmdbImageSize.w780,
+                              label: imageLabel,
+                              labelSize: 96,
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          22,
-                          _textTop,
-                          22,
-                          _textGap,
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            22,
+                            _textTop,
+                            22,
+                            _textGap,
+                          ),
+                          child: _HeroText(
+                            tags: tags,
+                            title: title,
+                            overview: overview,
+                          ),
                         ),
-                        child: _HeroText(
-                          tags: tags,
-                          title: title,
-                          overview: overview,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              ...extras.map((e) => SliverToBoxAdapter(child: e)),
-              SliverToBoxAdapter(
-                child: SizedBox(height: (cta == null ? 40 : 120) + bottomInset),
-              ),
-            ],
+                ...extras.map((e) => SliverToBoxAdapter(child: e)),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: (cta == null ? 40 : 120) + bottomInset,
+                  ),
+                ),
+              ],
+            ),
           ),
           DetailTopBar(onBack: onBack),
           if (cta != null) ...[
@@ -353,6 +364,24 @@ class DetailCtaRow extends StatelessWidget {
       ),
     ],
   );
+}
+
+/// [AppRefresh] when [onRefresh] is set, starting below the floating top
+/// bar so the spinner is not hidden behind the back button.
+class _MaybeRefresh extends StatelessWidget {
+  const _MaybeRefresh({required this.onRefresh, required this.child});
+
+  final Future<void> Function()? onRefresh;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => onRefresh == null
+      ? child
+      : AppRefresh(
+          onRefresh: onRefresh!,
+          edgeOffset: MediaQuery.paddingOf(context).top + 48,
+          child: child,
+        );
 }
 
 /// Full-screen error card for a detail page, with the back button kept.

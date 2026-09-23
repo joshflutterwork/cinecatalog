@@ -1,4 +1,5 @@
 import 'package:cinecatalog/core/theme/app_tokens.dart';
+import 'package:cinecatalog/core/widgets/app_refresh.dart';
 import 'package:cinecatalog/core/widgets/headers.dart';
 import 'package:cinecatalog/core/widgets/state_views.dart';
 import 'package:cinecatalog/features/home/presentation/browse_category.dart';
@@ -34,56 +35,67 @@ class HomeFeed extends ConsumerWidget {
     final deck = mode.deck;
     final state = deck.watch(ref);
 
-    return CustomScrollView(
-      slivers: [
-        const SliverToBoxAdapter(child: SizedBox(height: 4)),
-        ...switch (state) {
-          MediaListLoading() => [
-            const SliverToBoxAdapter(child: HomeSkeleton()),
-          ],
-          MediaListError(:final failure) => [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-                child: ErrorCard(error: failure, onRetry: () => _retryAll(ref)),
-              ),
-            ),
-          ],
-          MediaListEmpty() || MediaListLoaded() => [
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: deck.title,
-                style: AppText.sectionTitle,
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
-                onViewAll: () => context.push(deck.path),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: state is! MediaListLoaded
-                  ? const EmptyState(
-                      title: 'No titles yet',
-                      body: 'This category is still empty on TMDB.',
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 72, 20, 10),
-                      child: StackedDeck(
-                        items: state.data.items,
-                        onTap: (media) => context.push(Routes.media(media)),
-                      ),
-                    ),
-            ),
-            for (final rail in mode.rails)
+    return AppRefresh(
+      // Reloads the deck and the tab's three rails together.
+      onRefresh: () => Future.wait([
+        for (final category in [deck, ...mode.rails])
+          category.notifier(ref).refresh(),
+      ]),
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          const SliverToBoxAdapter(child: SizedBox(height: 4)),
+          ...switch (state) {
+            MediaListLoading() => [
+              const SliverToBoxAdapter(child: HomeSkeleton()),
+            ],
+            MediaListError(:final failure) => [
               SliverToBoxAdapter(
-                child: MediaRail(
-                  category: rail,
-                  onOpen: (media) => context.push(Routes.media(media)),
-                  onViewAll: () => context.push(rail.path),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                  child: ErrorCard(
+                    error: failure,
+                    onRetry: () => _retryAll(ref),
+                  ),
                 ),
               ),
-          ],
-        },
-        const SliverToBoxAdapter(child: SizedBox(height: 120)),
-      ],
+            ],
+            MediaListEmpty() || MediaListLoaded() => [
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  title: deck.title,
+                  style: AppText.sectionTitle,
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                  onViewAll: () => context.push(deck.path),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: state is! MediaListLoaded
+                    ? const EmptyState(
+                        title: 'No titles yet',
+                        body: 'This category is still empty on TMDB.',
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 72, 20, 10),
+                        child: StackedDeck(
+                          items: state.data.items,
+                          onTap: (media) => context.push(Routes.media(media)),
+                        ),
+                      ),
+              ),
+              for (final rail in mode.rails)
+                SliverToBoxAdapter(
+                  child: MediaRail(
+                    category: rail,
+                    onOpen: (media) => context.push(Routes.media(media)),
+                    onViewAll: () => context.push(rail.path),
+                  ),
+                ),
+            ],
+          },
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
+        ],
+      ),
     );
   }
 }

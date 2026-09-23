@@ -60,4 +60,25 @@ void main() {
     await tester.pump();
     expect(find.text('Not found'), findsOneWidget);
   });
+
+  testWidgets('the FAB is here too, with Popular People active', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+
+    await tester.tap(find.bySemanticsLabel('Open menu'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    for (final item in ['Movies', 'TV Shows', 'Watchlist']) {
+      final pill = find.text(item);
+      expect(pill, findsOneWidget, reason: item);
+      final opacity = tester
+          .widget<Opacity>(
+            find.ancestor(of: pill, matching: find.byType(Opacity)).first,
+          )
+          .opacity;
+      expect(opacity, 1, reason: '$item is visible');
+    }
+  });
 }

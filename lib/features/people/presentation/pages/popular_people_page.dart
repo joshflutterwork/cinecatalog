@@ -12,6 +12,7 @@ import 'package:cinecatalog/core/widgets/pressable.dart';
 import 'package:cinecatalog/core/widgets/search_field.dart';
 import 'package:cinecatalog/core/widgets/shimmer_box.dart';
 import 'package:cinecatalog/core/widgets/state_views.dart';
+import 'package:cinecatalog/features/home/presentation/widgets/nav_fab.dart';
 import 'package:cinecatalog/features/people/domain/entities/person.dart';
 import 'package:cinecatalog/features/people/presentation/providers/people_providers.dart';
 import 'package:cinecatalog/features/people/presentation/state/people_search_state.dart';
@@ -20,6 +21,9 @@ import 'package:cinecatalog/router/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+/// Room under the last row for the FAB (bottom 104, 52 tall).
+const double _fabRoom = 170;
 
 const _gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
   crossAxisCount: 3,
@@ -115,18 +119,20 @@ class _PopularPeoplePageState extends ConsumerState<PopularPeoplePage> {
                   ),
                 Expanded(
                   child: !query.hasQuery
-                      ? _PopularBody(bottomPadding: 34 + bottom)
+                      ? _PopularBody(bottomPadding: _fabRoom + bottom)
                       // The request goes out after the debounce; show the
                       // skeleton already.
                       : query.isDebouncing
                       ? const _PeopleSkeleton()
                       : _SearchBody(
                           query: query.committedQuery,
-                          bottomPadding: 34 + bottom,
+                          bottomPadding: _fabRoom + bottom,
                         ),
                 ),
               ],
             ),
+            // Last, so the FAB sits above everything, as on home.
+            const Positioned.fill(child: NavFab(current: NavFabPage.people)),
           ],
         ),
       ),

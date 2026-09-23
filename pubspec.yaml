@@ -57,6 +57,13 @@ dev_dependencies:
   mocktail: ^1.0.5
   very_good_analysis: ^11.0.0
 
+# chucker_flutter 1.9.2 (latest) still pins share_plus ^12, which applies the
+# Kotlin Gradle Plugin that future Flutter versions refuse to build. 13.2+
+# supports built-in Kotlin; chucker only uses SharePlus.instance.share,
+# which 13.x keeps. Drop this once chucker allows share_plus 13.
+dependency_overrides:
+  share_plus: ^13.3.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

@@ -2,10 +2,19 @@
     <!-- TMDB API, poster images and trailers. Debug/profile had it; release
          builds need it here too. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- usesCleartextTraffic: every request is https (TMDB, images,
+         YouTube), so plain http is refused, also on Android < 9 where it
+         would otherwise be allowed.
+         allowBackup: the only app data is the watchlist; it is not backed up
+         to the cloud or copied to a new device. -->
     <application
         android:label="cinecatalog"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
